@@ -1,0 +1,39 @@
+{
+  "name": "5A AI - نظام التسديد الذكي",
+  "short_name": "5A AI",
+  "description": "نظام 5A الذكي لتحليل تسديدات البلياردو",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0d1117",
+  "theme_color": "#1a2a6c",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["sports", "productivity", "education"],
+  "shortcuts": [
+    {
+      "name": "تحليل سريع",
+      "short_name": "تحليل",
+      "description": "بدء تحليل ضربة جديدة",
+      "url": "./index.html#analyzer"
+    },
+    {
+      "name": "مكتبتي",
+      "short_name": "مكتبة",
+      "description": "عرض ضرباتي المحفوظة",
+      "url": "./index.html#library"
+    }
+  ]
+}

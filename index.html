@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="5A AI">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a2a6c">
+    <meta name="description" content="5A AI - نظام تحليل تسديدات البلياردو الذكي">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- الأنماط -->
+    <link rel="stylesheet" href="5A-style.css">
+    
+    <title>5A AI - نظام التسديد الذكي</title>
+</head>
+<body class="dark-theme">
+    <!-- شاشة تشخيص الخطأ -->
+    <div id="errorScreen" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ff7675; z-index: 10000; padding: 50px; color: white; font-family: 'Cairo', sans-serif;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h1 style="font-size: 3rem; margin-bottom: 30px;"><i class="fas fa-exclamation-triangle"></i> خطأ في التطبيق</h1>
+            <div id="errorDetails" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 1.1rem; line-height: 1.8;"></div>
+            <button onclick="window.location.reload()" style="margin-top: 20px; padding: 15px 30px; background: white; color: #ff7675; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">
+                <i class="fas fa-sync-alt"></i> إعادة تحميل الصفحة
+            </button>
+        </div>
+    </div>
+
+    <!-- شاشة التحميل -->
+    <div id="loadingScreen" class="loading-screen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1a2a6c, #0f1a4a); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="loading-content" style="text-align: center; color: white;">
+            <div class="plato-logo" style="margin-bottom: 30px;">
+                <i class="fas fa-brain" style="font-size: 4rem; color: #00d2d3; margin-bottom: 15px; animation: pulse 2s infinite;"></i>
+                <h1 style="font-size: 2.5rem; background: linear-gradient(to right, #fdbb2d, #00d2d3); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">5A AI</h1>
+            </div>
+            <div id="loadingProgress" style="font-size: 1.2rem; margin-bottom: 15px;">جاري التحميل...</div>
+            <div class="loading-bar" style="width: 300px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 2px; margin: 20px auto; overflow: hidden;">
+                <div class="loading-progress" id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(to right, #1a2a6c, #fdbb2d); transition: width 0.3s ease;"></div>
+            </div>
+            <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                <span id="currentLoadingModule">جاري تهيئة النظام...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية -->
+    <div id="mainApp" class="main-app" style="display: none;">
+        <!-- رأس التطبيق -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1><i class="fas fa-gem"></i> نظام 5A الذكي</h1>
+                    <p class="subtitle">تكنولوجيا تحليل البلياردو المتقدمة</p>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-item">
+                        <span class="stat-value" id="totalShots">0</span>
+                        <span class="stat-label">ضربة</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="aiAccuracy">0%</span>
+                        <span class="stat-label">دقة</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="learningLevel">1</span>
+                        <span class="stat-label">مستوى</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- التنقل الرئيسي -->
+        <nav class="main-nav">
+            <button class="nav-btn active" data-tab="analyzer">
+                <i class="fas fa-bullseye"></i>
+                <span>محلل الضربات</span>
+            </button>
+            <button class="nav-btn" data-tab="library">
+                <i class="fas fa-book"></i>
+                <span>مكتبتي</span>
+            </button>
+            <button class="nav-btn" data-tab="ai">
+                <i class="fas fa-brain"></i>
+                <span>مساعد AI</span>
+            </button>
+            <button class="nav-btn" data-tab="training">
+                <i class="fas fa-dumbbell"></i>
+                <span>تدريبات</span>
+            </button>
+            <!-- زر إدارة الجداول -->
+            <button class="nav-btn" id="tableEditorBtn">
+                <i class="fas fa-table"></i>
+                <span>إدارة الجداول</span>
+            </button>
+        </nav>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="main-content">
+            <!-- تبويب محلل الضربات -->
+            <section id="analyzerTab" class="tab-content active">
+                <div class="analyzer-container">
+                    <!-- مساعد AI السريع -->
+                    <div class="ai-quick-assist">
+                        <div class="ai-header">
+                            <i class="fas fa-robot"></i>
+                            <h3>مساعد 5A</h3>
+                            <span class="ai-status online">متصل</span>
+                        </div>
+                        <div class="ai-message" id="aiWelcomeMessage">
+                            مرحباً! أدخل قياساتك وسأحسب لك قياس العصا والمسار تلقائياً.
+                        </div>
+                    </div>
+
+                    <!-- نظام القياسات الاحترافي -->
+                    <div class="professional-measurement-system">
+                        <h2><i class="fas fa-ruler-combined"></i> نظام القياسات الاحترافي</h2>
+                        
+                        <!-- اختيار عدد الجدران -->
+                        <div class="section-card">
+                            <h3><i class="fas fa-layer-group"></i> عدد الجدران</h3>
+                            <div class="rails-grid">
+                                <button class="rail-selector" data-rails="1">
+                                    <span class="rail-number">١</span>
+                                    <span class="rail-text">جدار واحد</span>
+                                </button>
+                                <button class="rail-selector" data-rails="2">
+                                    <span class="rail-number">٢</span>
+                                    <span class="rail-text">جدارين</span>
+                                </button>
+                                <button class="rail-selector active" data-rails="3">
+                                    <span class="rail-number">٣</span>
+                                    <span class="rail-text">ثلاثة جدران</span>
+                                </button>
+                                <button class="rail-selector" data-rails="4">
+                                    <span class="rail-number">٤</span>
+                                    <span class="rail-text">أربعة جدران</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- إدخال القياسات -->
+                        <div class="section-card">
+                            <h3><i class="fas fa-bullseye"></i> أدخل قياساتك</h3>
+                            
+                            <div class="input-row">
+                                <div class="input-group">
+                                    <label for="whiteBallValue">
+                                        <i class="fas fa-circle" style="color: white;"></i>
+                                        قياس الكرة البيضاء
+                                    </label>
+                                    <select id="whiteBallValue" class="measurement-select">
+                                        <option value="">اختر القياس...</option>
+                                        <!-- سيتم تعبئته تلقائياً -->
+                                    </select>
+                                    <input type="range" id="whiteBallSlider" min="0" max="8" step="0.1" value="1.25">
+                                    <div class="quick-values">
+                                        <span class="quick-value" data-value="0">0</span>
+                                        <span class="quick-value" data-value="1">1</span>
+                                        <span class="quick-value" data-value="1.25">1.25</span>
+                                        <span class="quick-value" data-value="2">2</span>
+                                        <span class="quick-value" data-value="2.5">2.5</span>
+                                        <span class="quick-value" data-value="3">3</span>
+                                        <span class="quick-value" data-value="3.5">3.5</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="input-group">
+                                    <label for="aimValue">
+                                        <i class="fas fa-crosshairs" style="color: #ff4757;"></i>
+                                        قياس الهدف
+                                    </label>
+                                    <select id="aimValue" class="measurement-select">
+                                        <option value="">اختر الهدف...</option>
+                                        <option value="4">إلى 4</option>
+                                        <option value="5">إلى 5</option>
+                                        <option value="5.5">إلى 5.5</option>
+                                        <option value="6">إلى 6</option>
+                                        <option value="7" selected>إلى 7</option>
+                                        <option value="8">إلى 8</option>
+                                        <option value="جيب الزاوية">جيب الزاوية</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- إشعار للقياسات غير المسجلة -->
+                            <div id="missingDataAlert" class="alert alert-info" style="display: none;">
+                                <i class="fas fa-info-circle"></i>
+                                <span>هذه القياسات غير مسجلة بعد. يمكنك إضافتها لاحقاً.</span>
+                            </div>
+                        </div>
+                        
+                        <!-- النتائج المحسوبة -->
+                        <div class="section-card results-card">
+                            <h3><i class="fas fa-chart-line"></i> النتائج المحسوبة</h3>
+                            
+                            <div class="results-grid">
+                                <div class="result-box">
+                                    <div class="result-label">
+                                        <i class="fas fa-gem"></i>
+                                        قياس العصا
+                                    </div>
+                                    <div class="result-value" id="calculatedCue">-</div>
+                                    <div class="result-note" id="cueNote"></div>
+                                </div>
+                                
+                                <div class="result-box">
+                                    <div class="result-label">
+                                        <i class="fas fa-route"></i>
+                                        المسار النهائي
+                                    </div>
+                                    <div class="result-value" id="calculatedPath">-</div>
+                                    <div class="result-note" id="pathNote"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- تمثيل مرئي مبسط -->
+                            <div class="visual-hint">
+                                <small><i class="fas fa-lightbulb"></i> القيم أقل من 1 تعني أكثر من 10 (مثال: 0.4 = 10.4)</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- أزرار التحكم -->
+                    <div class="action-buttons">
+                        <button id="analyzeBtn" class="btn-primary btn-ai">
+                            <i class="fas fa-brain"></i>
+                            تحليل ذكي
+                        </button>
+                        <button id="saveBtn" class="btn-secondary">
+                            <i class="fas fa-save"></i>
+                            حفظ في مكتبتي
+                        </button>
+                    </div>
+
+                    <!-- نتائج التحليل -->
+                    <div id="analysisResults" class="analysis-results" style="display: none;">
+                        <!-- سيتم تعبئته بالذكاء الاصطناعي -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- تبويب مكتبتي -->
+            <section id="libraryTab" class="tab-content">
+                <div class="library-container">
+                    <h2><i class="fas fa-book-open"></i> مكتبة ضرباتي</h2>
+                    
+                    <!-- أدوات المكتبة -->
+                    <div class="library-tools">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="librarySearch" placeholder="ابحث في ضرباتك...">
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">الكل</button>
+                            <button class="filter-btn" data-filter="1">جدار واحد</button>
+                            <button class="filter-btn" data-filter="2">جدارين</button>
+                            <button class="filter-btn" data-filter="3">ثلاثة</button>
+                            <button class="filter-btn" data-filter="4">أربعة</button>
+                        </div>
+                    </div>
+
+                    <!-- قائمة الضربات -->
+                    <div id="shotsList" class="shots-list">
+                        <!-- سيتم تعبئته من localStorage -->
+                    </div>
+
+                    <!-- إحصائيات المكتبة -->
+                    <div class="library-stats">
+                        <div class="stat-card">
+                            <i class="fas fa-layer-group"></i>
+                            <div>
+                                <h3 id="totalShotsCount">0</h3>
+                                <p>إجمالي الضربات</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-chart-line"></i>
+                            <div>
+                                <h3 id="successRate">0%</h3>
+                                <p>معدل النجاح</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-star"></i>
+                            <div>
+                                <h3 id="topRails">-</h3>
+                                <p>الجدران المفضلة</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- تبويب مساعد AI -->
+            <section id="aiTab" class="tab-content">
+                <div class="ai-container">
+                    <div class="ai-dashboard">
+                        <h2><i class="fas fa-robot"></i> لوحة تحكم 5A الذكي</h2>
+                        
+                        <!-- معلومات التعلم -->
+                        <div class="ai-learning-info">
+                            <div class="ai-level">
+                                <div class="level-progress">
+                                    <div class="level-fill" style="width: 30%"></div>
+                                </div>
+                                <span>المستوى 1 - مبتدئ</span>
+                            </div>
+                            <p class="ai-description">أنا أتعلم من كل ضربة تسجلها. كلما سجلت أكثر، أصبحت تحليلاتي أكثر دقة.</p>
+                        </div>
+
+                        <!-- رؤى الذكاء الاصطناعي -->
+                        <div class="ai-insights">
+                            <h3><i class="fas fa-lightbulb"></i> رؤى ذكية</h3>
+                            <div id="aiInsightsList" class="insights-list">
+                                <div class="insight-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <p>سجّل أول ضربة لك لبدأ التعلم</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- نمط اللعب -->
+                        <div class="play-style">
+                            <h3><i class="fas fa-user"></i> نمط لعبتك</h3>
+                            <div id="playStyleProfile" class="style-profile">
+                                <p>سجل ضرباتك لبدأ تحليل نمط لعبك...</p>
+                            </div>
+                        </div>
+
+                        <!-- توصيات التدريب -->
+                        <div class="training-recommendations">
+                            <h3><i class="fas fa-dumbbell"></i> توصيات تدريبية</h3>
+                            <div id="trainingRecs" class="recs-list">
+                                <div class="rec-item">
+                                    <i class="fas fa-bullseye"></i>
+                                    <p>ابدأ بضربات الجدار الواحد لإتقان الأساسيات</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- تبويب التدريبات -->
+            <section id="trainingTab" class="tab-content">
+                <div class="training-container">
+                    <h2><i class="fas fa-graduation-cap"></i> نظام تدريب 5A</h2>
+                    
+                    <!-- تدريبات بلاتو الشهيرة -->
+                    <div class="plato-drills">
+                        <h3>تدريبات 5A الشهيرة</h3>
+                        <div class="famous-drills">
+                            <div class="drill-card" data-drill="diamond-mastery">
+                                <h4>إتقان نظام الدايمند</h4>
+                                <p>10 ضربات بكل قيمة من قيم الدايمند</p>
+                                <button class="btn-start-drill">بدء التدريب</button>
+                            </div>
+                            <div class="drill-card" data-drill="rail-control">
+                                <h4>السيطرة على الجدران</h4>
+                                <p>5 ضربات بكل عدد من الجدران (1-4)</p>
+                                <button class="btn-start-drill">بدء التدريب</button>
+                            </div>
+                            <div class="drill-card" data-drill="pressure-training">
+                                <h4>التدريب تحت الضغط</h4>
+                                <p>ضربات متتالية بوقت محدود</p>
+                                <button class="btn-start-drill">بدء التدريب</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- تذييل التطبيق -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>5A AI v1.0 - نظام تسديد البلياردو الذكي</p>
+                    <p class="footer-tip" id="footerTip">💡 النصيحة: التدريب اليومي يحسن الدقة بنسبة 20%</p>
+                </div>
+                <div class="footer-links">
+                    <button id="exportBtn" class="btn-outline">
+                        <i class="fas fa-download"></i> تصدير بياناتي
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- السكربتات مع تحميل تدريجي آمن -->
+    <script>
+        // ==================== LZString Fallback ====================
+        if (typeof LZString === 'undefined') {
+            window.LZString = {
+                compressToUTF16: function(str) {
+                    try { return btoa(unescape(encodeURIComponent(str))); } 
+                    catch(e) { return str; }
+                },
+                decompressFromUTF16: function(str) {
+                    try { return decodeURIComponent(escape(atob(str))); } 
+                    catch(e) { return str; }
+                }
+            };
+            console.log('✅ LZString fallback loaded');
+        }
+
+        // ==================== ERROR BOUNDARY ====================
+        window.addEventListener('error', (event) => {
+            console.error('❌ خطأ غير ممسوك:', event.error);
+            showErrorScreen(event.error);
+            event.preventDefault();
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('❌ Unhandled promise rejection:', event.reason);
+            event.preventDefault();
+        });
+        
+        function showErrorScreen(error) {
+            const errorScreen = document.getElementById('errorScreen');
+            const errorDetails = document.getElementById('errorDetails');
+            
+            if (errorDetails) {
+                errorDetails.innerHTML = `
+                    <p><strong>الرسالة:</strong> ${error?.message || 'غير معروفة'}</p>
+                    <p><strong>المكان:</strong> ${error?.filename || 'غير معروف'}:${error?.lineno || '?'}</p>
+                    <p><strong>الوقت:</strong> ${new Date().toLocaleString('ar-EG')}</p>
+                `;
+            }
+            
+            if (errorScreen) {
+                errorScreen.style.display = 'flex';
+            }
+        }
+        
+        // ==================== PROGRESSIVE LOADER ====================
+        const modules = [
+            { name: 'Advanced Tables', src: 'advanced-tables.js', critical: true },
+            { name: 'AI Engine', src: '5A-ai.js', critical: true },
+            { name: 'Table Manager', src: 'table-manager.js', critical: true },
+            { name: 'Core System', src: '5a-core.js', critical: true },
+            { name: 'Table Editor', src: 'table-editor.js', critical: false },
+            { name: 'Styles', src: '5A-style.css', critical: false, type: 'css' }
+        ];
+        
+        async function safeLoadModules() {
+            const progressBar = document.getElementById('progressBar');
+            const loadingProgress = document.getElementById('loadingProgress');
+            const currentLoadingModule = document.getElementById('currentLoadingModule');
+            
+            let loadedCount = 0;
+            
+            for (let i = 0; i < modules.length; i++) {
+                const module = modules[i];
+                
+                // Update UI
+                if (loadingProgress) loadingProgress.textContent = `جاري تحميل ${module.name}...`;
+                if (currentLoadingModule) currentLoadingModule.textContent = module.name;
+                
+                try {
+                    if (module.type === 'css') {
+                        const link = document.createElement('link');
+                        link.rel = 'stylesheet';
+                        link.href = module.src;
+                        document.head.appendChild(link);
+                    } else {
+                        await new Promise((resolve, reject) => {
+                            const script = document.createElement('script');
+                            script.src = module.src;
+                            script.onload = () => {
+                                console.log(`✅ Loaded: ${module.name}`);
+                                resolve();
+                            };
+                            script.onerror = () => {
+                                console.warn(`⚠️ Failed to load: ${module.name}`);
+                                reject(new Error(`Failed to load ${module.src}`));
+                            };
+                            script.async = false;
+                            document.head.appendChild(script);
+                        });
+                    }
+                    
+                    loadedCount++;
+                    if (progressBar) {
+                        progressBar.style.width = `${(loadedCount / modules.length) * 100}%`;
+                    }
+                    
+                } catch (error) {
+                    console.error(`❌ خطأ في تحميل ${module.name}:`, error);
+                    
+                    if (module.critical) {
+                        throw new Error(`موديول حاسم فشل: ${module.name}`);
+                    }
+                }
+                
+                // إعطاء وقت للمتصفح
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            if (loadingProgress) loadingProgress.textContent = 'جاري التهيئة النهائية...';
+        }
+        
+        // ==================== SAFE INITIALIZATION ====================
+        async function initializeApp() {
+            try {
+                // التحقق من الميزات الأساسية
+                const requiredFeatures = [
+                    { name: 'localStorage', test: () => typeof localStorage !== 'undefined' },
+                    { name: 'JSON', test: () => typeof JSON !== 'undefined' },
+                    { name: 'Promise', test: () => typeof Promise !== 'undefined' }
+                ];
+                
+                for (const feature of requiredFeatures) {
+                    if (!feature.test()) {
+                        throw new Error(`المتصفح لا يدعم ${feature.name}`);
+                    }
+                }
+                
+                // تحميل الموديولات
+                await safeLoadModules();
+                
+                // التحقق من الأنظمة الأساسية
+                const requiredSystems = ['System5A', 'MeasurementManager', 'FiveAAI'];
+                for (const system of requiredSystems) {
+                    if (typeof window[system] === 'undefined') {
+                        throw new Error(`${system} لم يتم تحميله`);
+                    }
+                }
+                
+                // تهيئة النظام
+                if (typeof System5A !== 'undefined' && typeof System5A.init === 'function') {
+                    System5A.init();
+                }
+                
+                // إخفاء شاشة التحميل
+                setTimeout(() => {
+                    const loadingScreen = document.getElementById('loadingScreen');
+                    const mainApp = document.getElementById('mainApp');
+                    
+                    if (loadingScreen) loadingScreen.style.display = 'none';
+                    if (mainApp) mainApp.style.display = 'block';
+                    
+                    console.log('🚀 التطبيق جاهز');
+                }, 500);
+                
+                // تسجيل Service Worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('service-worker.js')
+                        .then(() => console.log('✅ Service Worker registered'))
+                        .catch(err => console.warn('⚠️ Service Worker failed:', err));
+                }
+                
+            } catch (error) {
+                console.error('❌ فشل التهيئة:', error);
+                showErrorScreen(error);
+            }
+        }
+        
+        // بدء التحميل
+        initializeApp();
+    </script>
+</body>
+</html>
