@@ -79,6 +79,7 @@ body {
 .plato-logo h1 {
     font-size: 2.5rem;
     background: linear-gradient(to right, var(--accent), var(--ai-color));
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
@@ -386,6 +387,7 @@ body {
     background: linear-gradient(to right, var(--primary), var(--accent));
     border-radius: 3px;
     outline: none;
+    appearance: none;
     -webkit-appearance: none;
 }
 

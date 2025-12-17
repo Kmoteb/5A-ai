@@ -549,11 +549,10 @@ function initializePlatoApp() {
 }
 
 // 📁 5a-core.js (تحديث)
-const System5A = {
-    // ... الكود السابق ...
+// ... الكود السابق ...
     
-    // نظام Buffering وتوقيت دقيق
-    performanceOptimizer: {
+// نظام Buffering وتوقيت دقيق
+System5A.performanceOptimizer = {
         // Preload critical resources
         preloadCriticalAssets() {
             const criticalAssets = [
@@ -595,10 +594,16 @@ const System5A = {
                 return result;
             };
         }
-    },
+    }
+};
 
-    // تهيئة مع تحسين الأداء
-    initOptimized() {
+
+
+
+
+
+// تهيئة مع تحسين الأداء
+System5A.initOptimized = function() {
         // بدء preload في background
         this.performanceOptimizer.preloadCriticalAssets();
         
@@ -613,10 +618,10 @@ const System5A = {
         this.addCleanEventListener('aimValue', 'change', debouncedCalculate);
         
         console.log('🚀 نظام 5A محسّن للأداء');
-    },
+    };
     
     // إضافة مستمع مع تنظيف تلقائي
-    addCleanEventListener(elementId, event, handler) {
+    System5A.addCleanEventListener = function(elementId, event, handler) {
         const element = document.getElementById(elementId);
         if (!element) return;
         
@@ -632,8 +637,11 @@ const System5A = {
     }
 };
 
+
+
+
 // Batch operations
-batchSaveShots(shotsArray) {
+System5A.batchSaveShots = function(shotsArray) {
     return this.optimizationQueue.add('batchSave', async () => {
         const transaction = this.db.transaction(['shots'], 'readwrite');
         const store = transaction.objectStore('shots');
@@ -648,10 +656,10 @@ batchSaveShots(shotsArray) {
         
         await Promise.all(promises);
     });
-}
+},
 
 // تحليل متقدم للأنماط
-analyzePatterns() {
+System5A.analyzePatterns = function() {
     const shots = this.state.library;
     
     // Clustering بسيط
@@ -668,9 +676,9 @@ analyzePatterns() {
         outliers: this.detectOutliers(shots),
         trend: this.calculateTrend(shots)
     };
-}
+},
 
-kMeansClustering(data, k) {
+System5A.kMeansClustering = function(data, k) {
     // تبسيط لـ k-means
     const centroids = this.initializeCentroids(data, k);
     const clusters = Array(k).fill().map(() => []);

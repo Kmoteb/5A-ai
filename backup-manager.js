@@ -9,4 +9,10 @@ class BackupManager {
     
     // نسخ احتياطي تلقائي
     startAutoBackup() {
-        // فحص آخ
+        // فحص آخر نسخة احتياطية
+        setInterval(() => {
+            this.createBackup();
+        }, this.backupSchedule);
+    }
+
+}

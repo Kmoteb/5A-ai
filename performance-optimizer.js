@@ -1,4 +1,55 @@
 // 📁 performance-optimizer.js
+
+// Multi-tier caching (Memory → IndexedDB → localStorage)
+class MultiTierCache {
+    constructor() {
+        this.memoryCache = new Map();
+        this.memoryLimit = 100 * 1024 * 1024; // 100MB
+        this.currentMemory = 0;
+    }
+    
+    async get(key) {
+        // Tier 1: Memory
+        if (this.memoryCache.has(key)) {
+            return this.memoryCache.get(key);
+        }
+        
+        // Tier 2: IndexedDB
+        const dbResult = await this.getFromIndexedDB(key);
+        if (dbResult) {
+            this.setInMemory(key, dbResult);
+            return dbResult;
+        }
+        
+        // Tier 3: localStorage (fallback)
+        const lsResult = localStorage.getItem(key);
+        if (lsResult) {
+            const parsed = JSON.parse(lsResult);
+            this.setInMemory(key, parsed);
+            return parsed;
+        }
+        
+        return null;
+    }
+    
+    async set(key, value, options = {}) {
+        const size = JSON.stringify(value).length;
+        
+        // Memory tier
+        this.setInMemory(key, value, size);
+        
+        // IndexedDB tier (async)
+        if (!options.skipIndexedDB) {
+            this.setInIndexedDB(key, value);
+        }
+        
+        // localStorage tier (for critical data)
+        if (options.critical) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+    }
+}
+
 class PerformanceOptimizer {
     constructor() {
         this.metrics = {
@@ -83,56 +134,6 @@ class PerformanceOptimizer {
         };
         
         worker.addEventListener('message', handler);
-    }
-    
-    // Multi-tier caching (Memory → IndexedDB → localStorage)
-    class MultiTierCache {
-        constructor() {
-            this.memoryCache = new Map();
-            this.memoryLimit = 100 * 1024 * 1024; // 100MB
-            this.currentMemory = 0;
-        }
-        
-        async get(key) {
-            // Tier 1: Memory
-            if (this.memoryCache.has(key)) {
-                return this.memoryCache.get(key);
-            }
-            
-            // Tier 2: IndexedDB
-            const dbResult = await this.getFromIndexedDB(key);
-            if (dbResult) {
-                this.setInMemory(key, dbResult);
-                return dbResult;
-            }
-            
-            // Tier 3: localStorage (fallback)
-            const lsResult = localStorage.getItem(key);
-            if (lsResult) {
-                const parsed = JSON.parse(lsResult);
-                this.setInMemory(key, parsed);
-                return parsed;
-            }
-            
-            return null;
-        }
-        
-        async set(key, value, options = {}) {
-            const size = JSON.stringify(value).length;
-            
-            // Memory tier
-            this.setInMemory(key, value, size);
-            
-            // IndexedDB tier (async)
-            if (!options.skipIndexedDB) {
-                this.setInIndexedDB(key, value);
-            }
-            
-            // localStorage tier (for critical data)
-            if (options.critical) {
-                localStorage.setItem(key, JSON.stringify(value));
-            }
-        }
     }
     
     // Debounce and throttle
