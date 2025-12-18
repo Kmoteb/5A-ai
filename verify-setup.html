@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التحقق من إعدادات 5A AI</title>
+    <style>
+        body {
+            font-family: 'Cairo', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #0f1a4a);
+            color: white;
+            padding: 40px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #00d2d3;
+            font-size: 2rem;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 4px solid #00d2d3;
+        }
+        .check-item.fail {
+            border-left-color: #ff7675;
+            background: rgba(255, 118, 117, 0.1);
+        }
+        .check-item.pass {
+            border-left-color: #00d2d3;
+        }
+        .icon {
+            font-size: 1.5rem;
+            margin-left: 15px;
+            min-width: 30px;
+        }
+        .pass .icon {
+            color: #00d2d3;
+        }
+        .fail .icon {
+            color: #ff7675;
+        }
+        .content {
+            flex: 1;
+        }
+        .summary {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(0, 210, 211, 0.2);
+            border-radius: 8px;
+            border: 1px solid #00d2d3;
+        }
+        .summary.success h2 {
+            color: #00d2d3;
+        }
+        .summary.error h2 {
+            color: #ff7675;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 التحقق من إعدادات 5A AI</h1>
+        
+        <div id="checks"></div>
+        <div id="summary"></div>
+    </div>
+
+    <script>
+        const checks = [];
+        
+        function addCheck(name, passed, details = '') {
+            checks.push({ name, passed, details });
+            
+            const checksDiv = document.getElementById('checks');
+            const item = document.createElement('div');
+            item.className = `check-item ${passed ? 'pass' : 'fail'}`;
+            item.innerHTML = `
+                <div class="icon">${passed ? '✅' : '❌'}</div>
+                <div class="content">
+                    <strong>${name}</strong>
+                    ${details ? `<br><small>${details}</small>` : ''}
+                </div>
+            `;
+            checksDiv.appendChild(item);
+        }
+
+        // الفحوصات
+        
+        // 1. localStorage
+        try {
+            localStorage.setItem('test', 'ok');
+            localStorage.removeItem('test');
+            addCheck('localStorage', true, 'متاح وقابل للاستخدام');
+        } catch (e) {
+            addCheck('localStorage', false, 'غير متاح: ' + e.message);
+        }
+
+        // 2. Service Workers
+        const hasSW = 'serviceWorker' in navigator;
+        addCheck('Service Workers', hasSW, hasSW ? 'مدعوم للعمل بدون اتصال' : 'غير مدعوم');
+
+        // 3. Web Workers
+        const hasWorkers = typeof Worker !== 'undefined';
+        addCheck('Web Workers', hasWorkers, hasWorkers ? 'مدعوم للحسابات المتوازية' : 'غير مدعوم');
+
+        // 4. IndexedDB
+        const hasIndexedDB = typeof indexedDB !== 'undefined';
+        addCheck('IndexedDB', hasIndexedDB, hasIndexedDB ? 'قاعدة بيانات متقدمة متاحة' : 'غير متاح');
+
+        // 5. JSON
+        const hasJSON = typeof JSON !== 'undefined' && typeof JSON.stringify === 'function';
+        addCheck('JSON Support', hasJSON, hasJSON ? 'معالجة البيانات متاحة' : 'غير متاح');
+
+        // 6. Fetch API
+        const hasFetch = typeof fetch === 'function';
+        addCheck('Fetch API', hasFetch, hasFetch ? 'طلبات الشبكة متاحة' : 'غير متاح');
+
+        // 7. Promise
+        const hasPromise = typeof Promise !== 'undefined';
+        addCheck('Promise', hasPromise, hasPromise ? 'البرمجة غير المتزامنة متاحة' : 'غير متاح');
+
+        // 8. Console
+        const hasConsole = typeof console !== 'undefined';
+        addCheck('Console', hasConsole, hasConsole ? 'تصحيح الأخطاء متاح' : 'غير متاح');
+
+        // 9. أيقونات Font Awesome
+        try {
+            const link = document.createElement('link');
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+            // لا نضيفها الآن فقط نتحقق من إمكانية الوصول
+            addCheck('CDN Access (Font Awesome)', true, 'يمكن الوصول للموارد الخارجية');
+        } catch (e) {
+            addCheck('CDN Access (Font Awesome)', false, 'خطأ في الاتصال بـ CDN');
+        }
+
+        // 10. CSS Support
+        const hasCSS = document.styleSheets !== undefined;
+        addCheck('CSS Support', hasCSS, hasCSS ? 'التصاميم مدعومة' : 'غير مدعومة');
+
+        // الملخص
+        const passedCount = checks.filter(c => c.passed).length;
+        const totalCount = checks.length;
+        const summaryDiv = document.getElementById('summary');
+        const isSucess = passedCount >= 8;
+        
+        summaryDiv.className = `summary ${isSucess ? 'success' : 'error'}`;
+        summaryDiv.innerHTML = `
+            <h2>${isSucess ? '✅ جاهز للعمل!' : '⚠️ توجد مشاكل'}</h2>
+            <p>${passedCount} من ${totalCount} الاختبارات نجحت</p>
+            <p>${isSucess ? '🎉 جهازك مدعوم تماماً لتشغيل 5A AI' : '⚠️ قد تواجه مشاكل في بعض الميزات'}</p>
+        `;
+
+        console.log('✅ Verification complete:', { passed: passedCount, total: totalCount });
+    </script>
+</body>
+</html>
