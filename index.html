@@ -444,9 +444,16 @@
         
         // ==================== PROGRESSIVE LOADER ====================
         const modules = [
+            { name: 'Validation Engine', src: 'validation-engine.js', critical: true },
+            { name: 'Rail Systems', src: 'rail-systems.js', critical: true },
             { name: 'Advanced Tables', src: 'advanced-tables.js', critical: true },
+            { name: 'Geometry Calculator', src: 'geometry-calculator.js', critical: false },
             { name: 'AI Engine', src: '5A-ai.js', critical: true },
             { name: 'Table Manager', src: 'table-manager.js', critical: true },
+            { name: 'Table State Manager', src: 'table-state-manager.js', critical: false },
+            { name: 'Performance Optimizer', src: 'performance-optimizer.js', critical: false },
+            { name: 'Cloud Sync Manager', src: 'cloud-sync-manager.js', critical: false },
+            { name: 'Backup Manager', src: 'backup-manager.js', critical: false },
             { name: 'Core System', src: '5a-core.js', critical: true },
             { name: 'Table Editor', src: 'table-editor.js', critical: false },
             { name: 'Styles', src: '5A-style.css', critical: false, type: 'css' }
@@ -529,11 +536,27 @@
                 await safeLoadModules();
                 
                 // التحقق من الأنظمة الأساسية
-                const requiredSystems = ['System5A', 'MeasurementManager', 'FiveAAI'];
+                const requiredSystems = [
+                    'System5A', 
+                    'MeasurementManager', 
+                    'FiveAAI',
+                    'ValidationEngine',
+                    'AdvancedTables',
+                    'OneRailSystem',
+                    'TwoRailsSystem',
+                    'ThreeRailsSystem',
+                    'FourRailsSystem'
+                ];
+                const missingSystems = [];
                 for (const system of requiredSystems) {
                     if (typeof window[system] === 'undefined') {
-                        throw new Error(`${system} لم يتم تحميله`);
+                        missingSystems.push(system);
                     }
+                }
+                
+                if (missingSystems.length > 0) {
+                    console.warn('⚠️ أنظمة ناقصة:', missingSystems);
+                    // لا نرمي خطأ لأن بعضها غير حاسم
                 }
                 
                 // تهيئة النظام

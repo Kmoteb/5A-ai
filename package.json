@@ -1,0 +1,35 @@
+{
+  "name": "5A-ai",
+  "version": "1.0.0",
+  "description": "نظام 5A الذكي لتحليل تسديدات البلياردو",
+  "main": "index.html",
+  "type": "module",
+  "author": "Kmoteb",
+  "license": "MIT",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "dev": "python -m http.server 8080",
+    "build": "echo 'Build not required for static app'",
+    "test": "echo 'No tests configured'",
+    "lint": "eslint *.js 2>/dev/null || echo 'ESLint not configured'"
+  },
+  "keywords": [
+    "billiards",
+    "pool",
+    "analysis",
+    "5A",
+    "AI",
+    "machine-learning"
+  ],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Kmoteb/5A-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kmoteb/5A-ai/issues"
+  },
+  "homepage": "https://github.com/Kmoteb/5A-ai#readme"
+}

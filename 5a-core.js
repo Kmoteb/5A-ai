@@ -594,13 +594,21 @@ System5A.performanceOptimizer = {
                 return result;
             };
         }
+};
+
+// تهيئة مع تحسين الأداء
+System5A.initOptimized = function() {
+    if (window.performanceOptimizer) {
+        console.log('🚀 نظام 5A محسّن للأداء');
     }
 };
 
-
-
-
-
+// إضافة مستمع مع تنظيف تلقائي
+System5A.addCleanEventListener = function(elementId, event, handler) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    element.addEventListener(event, handler);
+};
 
 // تهيئة مع تحسين الأداء
 System5A.initOptimized = function() {
@@ -634,13 +642,10 @@ System5A.initOptimized = function() {
         // إضافة المستمع الجديد
         element.addEventListener(event, handler);
         element.dataset.handler = handler;
-    }
 };
 
-
-
-
-// Batch operations
+// Batch operations - توقيفي بشكل مؤقت
+/*
 System5A.batchSaveShots = function(shotsArray) {
     return this.optimizationQueue.add('batchSave', async () => {
         const transaction = this.db.transaction(['shots'], 'readwrite');
@@ -702,11 +707,12 @@ System5A.kMeansClustering = function(data, k) {
         points: cluster
     }));
 }
-
+*/
 
 // جعل النظام متاحاً عالمياً
 window.System5A = System5A;
 window.initializePlatoApp = initializePlatoApp;
+
 // ==================== Performance Optimizer Integration ====================
 if (typeof PerformanceOptimizer !== 'undefined') {
     window.performanceOptimizer = new PerformanceOptimizer();
@@ -716,7 +722,7 @@ if (typeof PerformanceOptimizer !== 'undefined') {
     
     // عرض إحصائيات كل 30 ثانية
     setInterval(() => {
-        const stats = performanceOptimizer.getPerformanceReport();
+        const stats = window.performanceOptimizer.getPerformanceReport();
         console.log('📊 Performance Stats:', stats);
     }, 30000);
 }
