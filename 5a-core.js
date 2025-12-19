@@ -74,14 +74,35 @@ const System5A = {
         });
     },
 
-    // تحليل الضربة الحالية
+    // تحليل الضربة الحالية (محسّنة - بدون innerHTML)
     analyzeCurrentShot: function() {
-        // هذه الدالة سيتم استبدالها بنظام القياسات الجديد
         const resultsDiv = document.getElementById('analysisResults');
         if (!resultsDiv) return;
         
         resultsDiv.style.display = 'block';
-        resultsDiv.innerHTML = '<div style="text-align:center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br>جاري تحليل الضربة...</div>';
+        
+        // مسح المحتوى القديم بأمان
+        while (resultsDiv.firstChild) {
+            resultsDiv.removeChild(resultsDiv.firstChild);
+        }
+        
+        // إنشاء عنصر التحميل بأمان
+        const loadingDiv = document.createElement('div');
+        loadingDiv.style.textAlign = 'center';
+        loadingDiv.style.padding = '40px';
+        
+        const spinner = document.createElement('i');
+        spinner.className = 'fas fa-spinner fa-spin fa-2x';
+        loadingDiv.appendChild(spinner);
+        
+        const br = document.createElement('br');
+        loadingDiv.appendChild(br);
+        
+        const text = document.createElement('p');
+        text.textContent = 'جاري تحليل الضربة...';
+        loadingDiv.appendChild(text);
+        
+        resultsDiv.appendChild(loadingDiv);
 
         // استخدام نظام 5A AI
         setTimeout(() => {
@@ -95,54 +116,120 @@ const System5A = {
                     aiMessage.textContent = `تم تحليل ضربتك! نسبة النجاح المتوقعة: ${analysis.successPrediction}%`;
                 }
             } else {
-                resultsDiv.innerHTML = '<div class="error">❌ نظام الذكاء الاصطناعي غير متاح</div>';
+                // إنشاء عنصر الخطأ بأمان
+                while (resultsDiv.firstChild) {
+                    resultsDiv.removeChild(resultsDiv.firstChild);
+                }
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = '❌ نظام الذكاء الاصطناعي غير متاح';
+                resultsDiv.appendChild(errorDiv);
             }
         }, 1000);
     },
 
-    // عرض نتائج التحليل
+    // عرض نتائج التحليل (محسّنة - بدون innerHTML)
     renderAnalysisResults: function(analysis) {
         const resultsDiv = document.getElementById('analysisResults');
         if (!resultsDiv) return;
         
-        let html = `
-            <div class="result-header">
-                <h3><i class="fas fa-microchip"></i> نتائج تحليل 5A</h3>
-                <span class="confidence-badge">الثقة: ${analysis.aiConfidence}%</span>
-            </div>
-            
-            <div class="prediction-card ${analysis.successPrediction > 70 ? 'high-chance' : 'low-chance'}">
-                <div class="prediction-circle">
-                    <span>${analysis.successPrediction}%</span>
-                    <small>نسبة النجاح</small>
-                </div>
-                <div class="prediction-info">
-                    <h4>${analysis.difficulty?.level || 'متوسط'}</h4>
-                    <p>مستوى المخاطرة: ${analysis.riskLevel?.warning || 'متوسطة'}</p>
-                    <p>الصعوبة: ${analysis.difficulty?.score || 5}/10</p>
-                </div>
-            </div>
-        `;
-
+        // مسح المحتوى القديم
+        while (resultsDiv.firstChild) {
+            resultsDiv.removeChild(resultsDiv.firstChild);
+        }
+        
+        // إنشاء رأس النتائج
+        const header = document.createElement('div');
+        header.className = 'result-header';
+        
+        const title = document.createElement('h3');
+        const titleIcon = document.createElement('i');
+        titleIcon.className = 'fas fa-microchip';
+        title.appendChild(titleIcon);
+        title.appendChild(document.createTextNode(' نتائج تحليل 5A'));
+        header.appendChild(title);
+        
+        const badge = document.createElement('span');
+        badge.className = 'confidence-badge';
+        badge.textContent = `الثقة: ${analysis.aiConfidence || 0}%`;
+        header.appendChild(badge);
+        
+        resultsDiv.appendChild(header);
+        
+        // إنشاء بطاقة التنبؤ
+        const predictionCard = document.createElement('div');
+        predictionCard.className = `prediction-card ${analysis.successPrediction > 70 ? 'high-chance' : 'low-chance'}`;
+        
+        const circle = document.createElement('div');
+        circle.className = 'prediction-circle';
+        
+        const percentage = document.createElement('span');
+        percentage.textContent = `${analysis.successPrediction || 0}%`;
+        circle.appendChild(percentage);
+        
+        const label = document.createElement('small');
+        label.textContent = 'نسبة النجاح';
+        circle.appendChild(label);
+        
+        predictionCard.appendChild(circle);
+        
+        const info = document.createElement('div');
+        info.className = 'prediction-info';
+        
+        const difficulty = document.createElement('h4');
+        difficulty.textContent = analysis.difficulty?.level || 'متوسط';
+        info.appendChild(difficulty);
+        
+        const risk = document.createElement('p');
+        risk.textContent = `مستوى المخاطرة: ${analysis.riskLevel?.warning || 'متوسطة'}`;
+        info.appendChild(risk);
+        
+        const score = document.createElement('p');
+        score.textContent = `الصعوبة: ${analysis.difficulty?.score || 5}/10`;
+        info.appendChild(score);
+        
+        predictionCard.appendChild(info);
+        resultsDiv.appendChild(predictionCard);
+        
         // إضافة التوصيات إذا كانت موجودة
         if (analysis.recommendations && analysis.recommendations.length > 0) {
-            html += `
-                <div class="recommendations-list">
-                    <h4><i class="fas fa-star"></i> التوصيات الذكية:</h4>
-                    ${analysis.recommendations.slice(0, 3).map(rec => `
-                        <div class="rec-item ${rec.priority || 'medium'}">
-                            <i class="fas fa-check-circle"></i>
-                            <div>
-                                <strong>${rec.text || ''}</strong>
-                                ${rec.tips && rec.tips[0] ? `<small>${rec.tips[0]}</small>` : ''}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+            const recDiv = document.createElement('div');
+            recDiv.className = 'recommendations-list';
+            
+            const recTitle = document.createElement('h4');
+            const starIcon = document.createElement('i');
+            starIcon.className = 'fas fa-star';
+            recTitle.appendChild(starIcon);
+            recTitle.appendChild(document.createTextNode(' التوصيات الذكية:'));
+            recDiv.appendChild(recTitle);
+            
+            analysis.recommendations.slice(0, 3).forEach(rec => {
+                const recItem = document.createElement('div');
+                recItem.className = `rec-item ${rec.priority || 'medium'}`;
+                
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-check-circle';
+                recItem.appendChild(icon);
+                
+                const content = document.createElement('div');
+                
+                const strong = document.createElement('strong');
+                strong.textContent = rec.text || '';
+                content.appendChild(strong);
+                
+                if (rec.tips && rec.tips[0]) {
+                    const small = document.createElement('small');
+                    small.textContent = rec.tips[0];
+                    content.appendChild(small);
+                }
+                
+                recItem.appendChild(content);
+                recDiv.appendChild(recItem);
+            });
+            
+            resultsDiv.appendChild(recDiv);
         }
-
-        resultsDiv.innerHTML = html;
     },
 
     // حفظ الضربة
@@ -188,28 +275,68 @@ const System5A = {
         }
     },
 
-    // عرض المكتبة
+    // عرض المكتبة (محسّنة - بدون innerHTML)
     renderLibrary: function() {
         const listContainer = document.getElementById('shotsList');
         if (!listContainer) return;
 
+        // مسح المحتوى القديم
+        while (listContainer.firstChild) {
+            listContainer.removeChild(listContainer.firstChild);
+        }
+
         if (this.state.library.length === 0) {
-            listContainer.innerHTML = '<div class="empty-state" style="text-align: center; padding: 40px; color: var(--gray);"><i class="fas fa-inbox fa-3x"></i><p>لا توجد ضربات محفوظة بعد</p></div>';
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.style.textAlign = 'center';
+            emptyState.style.padding = '40px';
+            
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-inbox fa-3x';
+            emptyState.appendChild(icon);
+            
+            const para = document.createElement('p');
+            para.textContent = 'لا توجد ضربات محفوظة بعد';
+            emptyState.appendChild(para);
+            
+            listContainer.appendChild(emptyState);
             return;
         }
 
-        listContainer.innerHTML = this.state.library.slice(0, 20).map(shot => `
-            <div class="shot-card" data-id="${shot.id}">
-                <div class="shot-info">
-                    <span class="shot-date">${new Date(shot.date).toLocaleDateString('ar-EG')}</span>
-                    <h4>${shot.rails || 0} جدران | قوة ${shot.cueMeasurement || 0}</h4>
-                    <p>${shot.notes || 'بدون ملاحظات'}</p>
-                </div>
-                <div class="shot-score">
-                    <span class="score-val">${shot.analysis?.successPrediction || 0}%</span>
-                </div>
-            </div>
-        `).join('');
+        this.state.library.slice(0, 20).forEach(shot => {
+            const card = document.createElement('div');
+            card.className = 'shot-card';
+            card.setAttribute('data-id', shot.id);
+            
+            const info = document.createElement('div');
+            info.className = 'shot-info';
+            
+            const date = document.createElement('span');
+            date.className = 'shot-date';
+            date.textContent = new Date(shot.date).toLocaleDateString('ar-EG');
+            info.appendChild(date);
+            
+            const title = document.createElement('h4');
+            title.textContent = `${shot.rails || 0} جدران | قوة ${shot.cueMeasurement || 0}`;
+            info.appendChild(title);
+            
+            const notes = document.createElement('p');
+            notes.textContent = shot.notes || 'بدون ملاحظات';
+            info.appendChild(notes);
+            
+            card.appendChild(info);
+            
+            const score = document.createElement('div');
+            score.className = 'shot-score';
+            
+            const scoreVal = document.createElement('span');
+            scoreVal.className = 'score-val';
+            scoreVal.textContent = `${shot.analysis?.successPrediction || 0}%`;
+            score.appendChild(scoreVal);
+            
+            card.appendChild(score);
+            listContainer.appendChild(card);
+        });
     },
 
     // تصفية المكتبة
@@ -240,24 +367,62 @@ const System5A = {
         const listContainer = document.getElementById('shotsList');
         if (!listContainer) return;
 
+        // مسح المحتوى القديم
+        while (listContainer.firstChild) {
+            listContainer.removeChild(listContainer.firstChild);
+        }
+
         if (shots.length === 0) {
-            listContainer.innerHTML = '<div class="empty-state" style="text-align: center; padding: 40px; color: var(--gray);"><p>لا توجد نتائج مطابقة</p></div>';
+            const emptyState = document.createElement('div');
+            emptyState.className = 'empty-state';
+            emptyState.style.textAlign = 'center';
+            emptyState.style.padding = '40px';
+            
+            const para = document.createElement('p');
+            para.textContent = 'لا توجد نتائج مطابقة';
+            emptyState.appendChild(para);
+            
+            listContainer.appendChild(emptyState);
             return;
         }
 
-        listContainer.innerHTML = shots.slice(0, 20).map(shot => `
-            <div class="shot-card" data-id="${shot.id}">
-                <div class="shot-info">
-                    <span class="shot-date">${new Date(shot.date).toLocaleDateString('ar-EG')}</span>
-                    <h4>${shot.rails || 0} جدران | قوة ${shot.cueMeasurement || 0}</h4>
-                    <p>${shot.notes || 'بدون ملاحظات'}</p>
-                </div>
-                <div class="shot-score">
-                    <span class="score-val">${shot.analysis?.successPrediction || 0}%</span>
-                </div>
-            </div>
-        `).join('');
+        shots.slice(0, 20).forEach(shot => {
+            const card = document.createElement('div');
+            card.className = 'shot-card';
+            card.setAttribute('data-id', shot.id);
+            
+            const info = document.createElement('div');
+            info.className = 'shot-info';
+            
+            const date = document.createElement('span');
+            date.className = 'shot-date';
+            date.textContent = new Date(shot.date).toLocaleDateString('ar-EG');
+            info.appendChild(date);
+            
+            const title = document.createElement('h4');
+            title.textContent = `${shot.rails || 0} جدران | قوة ${shot.cueMeasurement || 0}`;
+            info.appendChild(title);
+            
+            const notes = document.createElement('p');
+            notes.textContent = shot.notes || 'بدون ملاحظات';
+            info.appendChild(notes);
+            
+            card.appendChild(info);
+            
+            const score = document.createElement('div');
+            score.className = 'shot-score';
+            
+            const scoreVal = document.createElement('span');
+            scoreVal.className = 'score-val';
+            scoreVal.textContent = `${shot.analysis?.successPrediction || 0}%`;
+            score.appendChild(scoreVal);
+            
+            card.appendChild(score);
+            listContainer.appendChild(card);
+        });
     },
+
+    // تصفية المكتبة
 
     // تحديث الإحصائيات
     updateUIStats: function() {
@@ -379,19 +544,27 @@ const System5A = {
         this.switchTab('analyzer');
     },
 
-    // عرض الإشعارات
+    // عرض الإشعارات (محسّنة - بدون innerHTML)
     showNotification: function(message, type = 'info') {
-        // إنشاء عنصر الإشعار
+        // إنشاء عنصر الإشعار بأمان
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : 
-                               type === 'error' ? 'fa-exclamation-circle' : 
-                               'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
+        
+        const content = document.createElement('div');
+        content.className = 'notification-content';
+        
+        const icon = document.createElement('i');
+        const iconClass = type === 'success' ? 'fa-check-circle' : 
+                         type === 'error' ? 'fa-exclamation-circle' : 
+                         'fa-info-circle';
+        icon.className = `fas ${iconClass}`;
+        content.appendChild(icon);
+        
+        const text = document.createElement('span');
+        text.textContent = message;
+        content.appendChild(text);
+        
+        notification.appendChild(content);
         
         // إضافة الأنماط
         notification.style.cssText = `
