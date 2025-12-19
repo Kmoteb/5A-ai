@@ -205,9 +205,9 @@ class FiveAAI {
         // البدء من قاعدة 75%
         let prediction = 75;
         
-        // تطبيق قواعد
+        // تطبيق قواعد (بدون eval للأمان)
         this.knowledgeBase.rules.forEach(rule => {
-            if (eval(rule.condition.replace('rails', shotData.rails).replace('cueValue', shotData.cueValue))) {
+            if (this.evaluateRuleSafely(rule.condition, shotData)) {
                 prediction += 5;
             }
         });
@@ -236,9 +236,9 @@ class FiveAAI {
     generateRecommendations(shotData) {
         const recommendations = [];
         
-        // تطبيق القواعد المناسبة
+        // تطبيق القواعس المناسبة (بدون eval للأمان)
         this.knowledgeBase.rules.forEach(rule => {
-            if (eval(rule.condition.replace('rails', shotData.rails).replace('cueValue', shotData.cueValue))) {
+            if (this.evaluateRuleSafely(rule.condition, shotData)) {
                 recommendations.push({
                     type: 'rule',
                     priority: 'high',
@@ -686,6 +686,37 @@ class FeatureExtractor {
     calculateRiskScore(shotData) {
         const cue = shotData.cueMeasurement > 10 ? (shotData.cueMeasurement - 10) : shotData.cueMeasurement;
         return (shotData.rails * 0.4 + Math.abs(cue - 2.5) * 0.2 + (cue > 3.5 ? 0.3 : 0)) / 3;
+    }
+    
+    // ✅ دالة آمنة لتقييم الشروط (بدون eval)
+    evaluateRuleSafely(condition, data) {
+        const conditionMap = {
+            'rails == 1': (d) => d.rails === 1,
+            'rails == 2': (d) => d.rails === 2,
+            'rails == 3': (d) => d.rails === 3,
+            'rails == 4': (d) => d.rails === 4,
+            'rails >= 3': (d) => d.rails >= 3,
+            'rails <= 2': (d) => d.rails <= 2,
+            'cueValue < 1.5': (d) => d.cueValue < 1.5,
+            'cueValue >= 1.5 && cueValue <= 3': (d) => d.cueValue >= 1.5 && d.cueValue <= 3,
+            'cueValue > 3': (d) => d.cueValue > 3,
+            'cueValue < 1': (d) => d.cueValue < 1,
+            'cueValue > 3.5': (d) => d.cueValue > 3.5,
+            'cueValue >= 2 && cueValue <= 3': (d) => d.cueValue >= 2 && d.cueValue <= 3,
+        };
+        
+        const rule = conditionMap[condition];
+        if (!rule) {
+            console.warn(`⚠️ شرط غير معروف: ${condition}`);
+            return false;
+        }
+        
+        try {
+            return rule(data) ?? false;
+        } catch (error) {
+            console.error(`❌ خطأ في تقييم الشرط "${condition}":`, error);
+            return false;
+        }
     }
 }
 

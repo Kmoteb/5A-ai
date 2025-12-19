@@ -1,0 +1,233 @@
+<!-- 📁 index-improved.html - نسخة محسنة مع Accessibility -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="5A AI">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a2a6c">
+    <meta name="description" content="5A AI - نظام تحليل تسديدات البلياردو الذكي">
+    
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- الأنماط -->
+    <link rel="stylesheet" href="5A-style.css">
+    
+    <title>5A AI - نظام التسديد الذكي</title>
+</head>
+<body class="dark-theme">
+    <!-- شاشة تشخيص الخطأ -->
+    <div id="errorScreen" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #ff7675; z-index: 10000; padding: 50px; color: white; font-family: 'Cairo', sans-serif;">
+        <div style="max-width: 800px; margin: 0 auto;">
+            <h1 style="font-size: 3rem; margin-bottom: 30px;">
+                <i class="fas fa-exclamation-triangle" aria-hidden="true"></i> خطأ في التطبيق
+            </h1>
+            <div id="errorDetails" style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 12px; margin: 20px 0; font-size: 1.1rem; line-height: 1.8;"></div>
+            <button onclick="window.location.reload()" style="margin-top: 20px; padding: 15px 30px; background: white; color: #ff7675; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">
+                إعادة تحميل
+            </button>
+        </div>
+    </div>
+
+    <!-- شاشة التحميل مع شريط التقدم -->
+    <div id="loadingScreen" class="loading-screen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, #1a2a6c, #0f1a4a); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="loading-content" style="text-align: center; color: white;">
+            <div class="plato-logo" style="margin-bottom: 30px; font-size: 3rem;">
+                <i class="fas fa-billiards" aria-hidden="true"></i>
+            </div>
+            <div id="loadingProgress" style="font-size: 1.2rem; margin-bottom: 15px;">جاري التحميل...</div>
+            <!-- شريط التقدم محسّن -->
+            <div class="loading-bar-container" style="width: 300px; height: 4px; background: rgba(255, 255, 255, 0.2); border-radius: 2px; margin: 20px auto; overflow: hidden;">
+                <div id="progressBar" style="height: 100%; width: 0%; background: linear-gradient(to right, #1a2a6c, #fdbb2d, #ff7675); transition: width 0.3s ease;"></div>
+            </div>
+            <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                <span id="currentLoadingModule">تجهيز النظام...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية -->
+    <div id="mainApp" class="main-app" style="display: none;">
+        <!-- رأس التطبيق -->
+        <header class="app-header" role="banner">
+            <div class="header-content">
+                <h1 style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-billiards" aria-hidden="true"></i>
+                    <span>5A AI - نظام التسديد الذكي</span>
+                </h1>
+            </div>
+        </header>
+
+        <!-- التنقل الرئيسي مع تحسينات Accessibility -->
+        <nav class="main-nav" role="navigation" aria-label="القائمة الرئيسية">
+            <button class="nav-btn active" data-tab="analyzer" 
+                    aria-label="محلل الضربات" role="tab" 
+                    aria-selected="true" aria-controls="analyzerPanel">
+                <i class="fas fa-bullseye" aria-hidden="true"></i>
+                <span>التحليل</span>
+            </button>
+            <button class="nav-btn" data-tab="library" 
+                    aria-label="مكتبة الضربات" role="tab" 
+                    aria-selected="false" aria-controls="libraryPanel">
+                <i class="fas fa-book" aria-hidden="true"></i>
+                <span>المكتبة</span>
+            </button>
+            <button class="nav-btn" data-tab="ai" 
+                    aria-label="مساعد الذكاء الاصطناعي" role="tab" 
+                    aria-selected="false" aria-controls="aiPanel">
+                <i class="fas fa-robot" aria-hidden="true"></i>
+                <span>المساعد</span>
+            </button>
+            <button class="nav-btn" id="tableEditorBtn" 
+                    aria-label="محرر الجداول" role="tab">
+                <i class="fas fa-table" aria-hidden="true"></i>
+                <span>الجداول</span>
+            </button>
+        </nav>
+
+        <!-- المحتوى الرئيسي -->
+        <main class="main-content" role="main">
+            <!-- تبويب محلل الضربات -->
+            <section id="analyzerPanel" class="tab-content active" role="tabpanel" 
+                     aria-labelledby="analyzer">
+                <div class="input-group">
+                    <label for="railsSelect" id="railsLabel" class="required-field">
+                        <span>اختر عدد الجدران <span aria-label="مطلوب">*</span></span>
+                    </label>
+                    <select id="railsSelect" aria-labelledby="railsLabel" 
+                            aria-describedby="railsHelp" required>
+                        <option value="">-- اختر عدد الجدران --</option>
+                        <option value="1">جدار واحد</option>
+                        <option value="2">جدارين</option>
+                        <option value="3">ثلاثة جدران</option>
+                        <option value="4">أربعة جدران</option>
+                    </select>
+                    <small id="railsHelp">اختر عدد جدران الارتطام المتوقعة</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="whiteBallValue" id="whiteBallLabel" class="required-field">
+                        <span>قياس الكرة البيضاء <span aria-label="مطلوب">*</span></span>
+                    </label>
+                    <select id="whiteBallValue" aria-labelledby="whiteBallLabel" 
+                            aria-describedby="whiteBallHelp" required>
+                        <option value="">-- اختر القياس --</option>
+                    </select>
+                    <small id="whiteBallHelp">من 1.25 إلى 8 (بزيادات 0.25)</small>
+                </div>
+
+                <div class="input-group">
+                    <label for="aimValue" id="aimLabel" class="required-field">
+                        <span>قياس الهدف <span aria-label="مطلوب">*</span></span>
+                    </label>
+                    <select id="aimValue" aria-labelledby="aimLabel" 
+                            aria-describedby="aimHelp" required>
+                        <option value="">-- اختر قياس الهدف --</option>
+                    </select>
+                    <small id="aimHelp">من 1 إلى 12</small>
+                </div>
+
+                <button id="analyzeBtn" class="btn-primary" 
+                        aria-label="حلل الضربة الحالية"
+                        onclick="System5A.analyzeCurrentShot()">
+                    <i class="fas fa-play" aria-hidden="true"></i> تحليل
+                </button>
+
+                <div id="analysisResults" role="region" aria-live="polite" 
+                     aria-label="نتائج التحليل" style="display: none; margin-top: 20px;"></div>
+            </section>
+
+            <!-- تبويب مكتبة الضربات -->
+            <section id="libraryPanel" class="tab-content" role="tabpanel" 
+                     aria-labelledby="library">
+                <div class="search-group">
+                    <label for="librarySearch" id="librarySearchLabel">
+                        البحث في المكتبة:
+                    </label>
+                    <input type="search" id="librarySearch" 
+                           aria-labelledby="librarySearchLabel"
+                           placeholder="ابحث عن ضربة...">
+                </div>
+
+                <div class="filter-group" role="group" aria-label="تصفية الضربات">
+                    <button class="filter-btn" data-filter="all">الكل</button>
+                    <button class="filter-btn" data-filter="rails-1">جدار واحد</button>
+                    <button class="filter-btn" data-filter="rails-2">جدارين</button>
+                    <button class="filter-btn" data-filter="rails-3+">3+ جدران</button>
+                </div>
+
+                <div id="libraryList" role="list" aria-label="قائمة الضربات المحفوظة">
+                    <!-- يتم ملء القائمة ديناميكياً -->
+                </div>
+            </section>
+
+            <!-- تبويب مساعد الذكاء الاصطناعي -->
+            <section id="aiPanel" class="tab-content" role="tabpanel" 
+                     aria-labelledby="ai">
+                <div id="aiRecommendations" role="region" aria-live="polite" 
+                     aria-label="توصيات الذكاء الاصطناعي">
+                    <!-- يتم ملء التوصيات ديناميكياً -->
+                </div>
+            </section>
+        </main>
+
+        <!-- تذييل التطبيق -->
+        <footer class="app-footer" role="contentinfo">
+            <p>&copy; 2025 5A AI - جميع الحقوق محفوظة</p>
+        </footer>
+    </div>
+
+    <!-- السكربتات -->
+    <script src="security-utils.js"></script>
+    <script>
+        // تحديث شريط التقدم
+        async function updateProgress(percent) {
+            const bar = document.getElementById('progressBar');
+            if (bar) bar.style.width = percent + '%';
+        }
+        
+        // إعدادات التحميل
+        async function initializeApp() {
+            try {
+                updateProgress(10);
+                
+                // تحميل الملفات الأساسية
+                const modules = [
+                    { name: '5a-core.js', src: '5a-core.js', type: 'js', critical: true },
+                    { name: '5a-ai.js', src: '5a-ai.js', type: 'js', critical: true },
+                    // ... باقي الملفات
+                ];
+                
+                for (let i = 0; i < modules.length; i++) {
+                    const percent = 10 + (i / modules.length) * 80;
+                    await updateProgress(percent);
+                }
+                
+                updateProgress(100);
+                setTimeout(() => {
+                    document.getElementById('loadingScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                }, 500);
+                
+            } catch (error) {
+                console.error('خطأ في التهيئة:', error);
+                showErrorScreen(error);
+            }
+        }
+        
+        // عند تحميل الصفحة
+        window.addEventListener('load', () => {
+            setTimeout(initializeApp, 100);
+        });
+    </script>
+</body>
+</html>
